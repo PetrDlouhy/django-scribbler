@@ -13,7 +13,7 @@ def read_file(filename):
 
 
 setup(
-    name='django-scribbler',
+    name='django-scribbler-django2.0',
     version=__import__('scribbler').__version__,
     author='Caktus Consulting Group',
     author_email='solutions@caktusgroup.com',
