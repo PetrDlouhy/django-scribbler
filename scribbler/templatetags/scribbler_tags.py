@@ -32,6 +32,16 @@ class ScribbleNode(template.Node):
 
     child_nodelists = ('nodelist_default', )
 
+    def get_wrapper_template(self):
+        if not hasattr(self, 'wrapper_template'):
+            self.wrapper_template = template.loader.get_template('scribbler/scribble-wrapper.html')
+        return self.wrapper_template
+
+    def get_blank_scribble(self):
+        if not hasattr(self, 'blank_scribble'):
+            self.blank_scribble = self.get_wrapper_template().render({})
+        return self.blank_scribble
+
     def __init__(self, slug, nodelist, raw, url=None):
         self.slug = template.Variable(slug)
         self.nodelist_default = nodelist
@@ -72,10 +82,7 @@ class ScribbleNode(template.Node):
             else:
                 scribble_template = template.Template(self.raw)
         scribble_context = build_scribble_context(scribble, context)
-        content = scribble_template.render(scribble_context, request)
-        wrapper_template = template.loader.get_template('scribbler/scribble-wrapper.html')
         context['scribble'] = scribble
-        context['rendered_scribble'] = content
         user = context.get('user', None)
         show_controls = False
         can_edit = False
@@ -93,9 +100,13 @@ class ScribbleNode(template.Node):
         context['can_edit_scribble'] = can_edit
         context['can_delete_scribble'] = can_delete
         context['raw_content'] = self.raw
+        if not bool(scribble.content.strip()) and not (can_edit or can_add):
+            return self.get_blank_scribble()  # Don't bother to render blank scribble
+        content = scribble_template.render(scribble_context, request)
+        context['rendered_scribble'] = content
         # render() takes a dict, so we have to extract the context dict from the object
         context_data = context.dicts[-1]
-        return wrapper_template.render(context_data, request)
+        return self.get_wrapper_template().render(context_data, request)
 
 
 
