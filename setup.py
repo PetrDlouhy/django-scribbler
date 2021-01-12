@@ -1,5 +1,14 @@
 import os
+import subprocess
+
+from distutils.command.install import install as DistutilsInstall
 from setuptools import setup, find_packages
+
+
+class CompileInstall(DistutilsInstall):
+    def run(self):
+        os.system("make fetch-static-libs build-css build-js")
+        DistutilsInstall.run(self)
 
 
 def read_file(filename):
@@ -43,5 +52,6 @@ setup(
     ],
     long_description=read_file('README.rst'),
     test_suite="runtests.runtests",
+    cmdclass={'install': CompileInstall},
     zip_safe=False,  # because we're including media that Django needs
 )
