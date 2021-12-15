@@ -51,6 +51,9 @@ setup(
     ],
     long_description=read_file('README.rst'),
     test_suite="runtests.runtests",
-    cmdclass={'build_py': CompileInstall},
+    cmdclass={
+        'build_py': CompileInstall,
+        'install': CompileInstall,
+    },
     zip_safe=False,  # because we're including media that Django needs
 )
