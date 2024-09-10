@@ -14,12 +14,16 @@ from .models import Scribble
 from .utils import get_variables
 
 
-def build_scribble_context(scribble):
+def build_scribble_context(scribble, context={}):
     "Create context for rendering a scribble or scribble preview."
-    context = {
-        'scribble': scribble,
-    }
+    if context.__class__.__name__ == 'RequestContext':
+        context = context.flatten()
+    else:
+        context = context.copy()
 
+    context.update({
+        'scribble': scribble,
+    })
     return context
 
 
