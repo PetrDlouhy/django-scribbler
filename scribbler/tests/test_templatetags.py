@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 "Test for template tags."
+from datetime import timedelta
 from django.contrib.auth.models import Permission
 from django.core.cache import cache
 from django.template import Template, TemplateSyntaxError
 from django.template.context import RequestContext
 from django.test.client import RequestFactory
+from django.utils.timezone import now
 from unittest import skipIf
 
 from . import DaysLog
@@ -184,6 +186,61 @@ class RenderScribbleTestCase(ScribblerDataTestCase):
         result = self.render_template_tag(slug='"other"')
         self.assertTrue('<form' in result)
         self.assertTrue('with-controls' in result)
+
+    def test_scheduled_content_active(self):
+        "Render scheduled content when within the scheduled time period."
+        self.scribble.content_scheduled = '<p>Scheduled content.</p>'
+        self.scribble.content_scheduled_start = now() - timedelta(hours=1)
+        self.scribble.content_scheduled_end = now() + timedelta(hours=1)
+        self.scribble.save()
+        cache.clear()
+        result = self.render_template_tag(slug='"sidebar"')
+        self.assertTrue('<p>Scheduled content.</p>' in result)
+        self.assertFalse('<p>Scribble content.</p>' in result)
+
+    def test_scheduled_content_before_start(self):
+        "Render regular content when before scheduled start time."
+        self.scribble.content_scheduled = '<p>Scheduled content.</p>'
+        self.scribble.content_scheduled_start = now() + timedelta(hours=1)
+        self.scribble.content_scheduled_end = now() + timedelta(hours=2)
+        self.scribble.save()
+        cache.clear()
+        result = self.render_template_tag(slug='"sidebar"')
+        self.assertTrue('<p>Scribble content.</p>' in result)
+        self.assertFalse('<p>Scheduled content.</p>' in result)
+
+    def test_scheduled_content_after_end(self):
+        "Render regular content when after scheduled end time."
+        self.scribble.content_scheduled = '<p>Scheduled content.</p>'
+        self.scribble.content_scheduled_start = now() - timedelta(hours=2)
+        self.scribble.content_scheduled_end = now() - timedelta(hours=1)
+        self.scribble.save()
+        cache.clear()
+        result = self.render_template_tag(slug='"sidebar"')
+        self.assertTrue('<p>Scribble content.</p>' in result)
+        self.assertFalse('<p>Scheduled content.</p>' in result)
+
+    def test_scheduled_content_no_end_time(self):
+        "Render scheduled content indefinitely when no end time is set."
+        self.scribble.content_scheduled = '<p>Scheduled content.</p>'
+        self.scribble.content_scheduled_start = now() - timedelta(hours=1)
+        self.scribble.content_scheduled_end = None
+        self.scribble.save()
+        cache.clear()
+        result = self.render_template_tag(slug='"sidebar"')
+        self.assertTrue('<p>Scheduled content.</p>' in result)
+        self.assertFalse('<p>Scribble content.</p>' in result)
+
+    def test_scheduled_content_no_start_time(self):
+        "Render regular content when scheduled start time is not set."
+        self.scribble.content_scheduled = '<p>Scheduled content.</p>'
+        self.scribble.content_scheduled_start = None
+        self.scribble.content_scheduled_end = now() + timedelta(hours=1)
+        self.scribble.save()
+        cache.clear()
+        result = self.render_template_tag(slug='"sidebar"')
+        self.assertTrue('<p>Scribble content.</p>' in result)
+        self.assertFalse('<p>Scheduled content.</p>' in result)
 
 
 class RenderScribbleFieldTestCase(ScribblerDataTestCase):
