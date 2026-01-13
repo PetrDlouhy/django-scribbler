@@ -18,6 +18,26 @@ class Scribble(models.Model):
     slug = models.SlugField(max_length=64, blank=True, default="")
     url = models.CharField(max_length=255, blank=True, default="")
     content = models.TextField(blank=True, default="")
+    content_scheduled = models.TextField(
+        "Scheduled content",
+        blank=True,
+        default="",
+        help_text="Temporary content to be displayed during a scheduled time period.",
+    )
+    content_scheduled_start = models.DateTimeField(
+        "Scheduled content start",
+        null=True,
+        blank=True,
+        help_text="The start time for displaying the scheduled content. "
+                  "This is required for scheduled content to be displayed.",
+    )
+    content_scheduled_end = models.DateTimeField(
+        "Scheduled content end",
+        null=True,
+        blank=True,
+        help_text="The end time for displaying the scheduled content. "
+                  "Leave blank for unlimited time.",
+    )
 
     def __str__(self):
         return '{0} - {1}'.format(self.slug, self.url)
