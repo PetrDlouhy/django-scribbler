@@ -73,14 +73,15 @@ class ScribbleNode(template.Node):
                 cache.set(key, scribble, CACHE_TIMEOUT)
         if scribble.pk:
             content_to_render = scribble.content
+            _now = now()
             if (
                 scribble.content_scheduled
                 and scribble.content_scheduled_start
-                and scribble.content_scheduled_start <= now()
+                and scribble.content_scheduled_start <= _now
             ):
                 if (
                     not scribble.content_scheduled_end
-                    or scribble.content_scheduled_end > now()
+                    or scribble.content_scheduled_end > _now
                 ):
                     content_to_render = scribble.content_scheduled
             if hasattr(template, 'engines'):
