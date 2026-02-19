@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.timezone import now
 
 from scribbler.conf import CACHE_TIMEOUT, CACHE_KEY_FUNCTION
 from scribbler.forms import ScribbleForm, FieldScribbleForm
@@ -71,10 +72,22 @@ class ScribbleNode(template.Node):
             if CACHE_TIMEOUT:
                 cache.set(key, scribble, CACHE_TIMEOUT)
         if scribble.pk:
+            content_to_render = scribble.content
+            _now = now()
+            if (
+                scribble.content_scheduled
+                and scribble.content_scheduled_start
+                and scribble.content_scheduled_start <= _now
+            ):
+                if (
+                    not scribble.content_scheduled_end
+                    or scribble.content_scheduled_end > _now
+                ):
+                    content_to_render = scribble.content_scheduled
             if hasattr(template, 'engines'):
-                scribble_template = template.engines['django'].from_string(scribble.content)
+                scribble_template = template.engines['django'].from_string(content_to_render)
             else:
-                scribble_template = template.Template(scribble.content)
+                scribble_template = template.Template(content_to_render)
         else:
             scribble.content = self.raw
             if hasattr(template, 'engines'):
