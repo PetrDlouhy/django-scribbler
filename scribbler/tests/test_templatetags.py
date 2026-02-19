@@ -185,6 +185,13 @@ class RenderScribbleTestCase(ScribblerDataTestCase):
         self.assertTrue('<form' in result)
         self.assertTrue('with-controls' in result)
 
+    def test_parent_context_available_in_scribble(self):
+        "Parent template context variables are accessible inside scribble content."
+        self.scribble.content = '{{ greeting }}'
+        self.scribble.save()
+        result = self.render_template_tag(slug='"sidebar"', context={'greeting': 'hello'})
+        self.assertIn('hello', result)
+
 
 class RenderScribbleFieldTestCase(ScribblerDataTestCase):
     "Tag to render a model field instance scribble."
@@ -235,3 +242,10 @@ class RenderScribbleFieldTestCase(ScribblerDataTestCase):
         result = self.render_template_tag(self.days_log, 'happenings')
         self.assertTrue('<form' in result)
         self.assertTrue('with-controls' in result)
+
+    def test_parent_context_available_in_scribble_field(self):
+        "Parent template context variables are accessible inside scribble field content."
+        self.days_log.happenings = '{{ greeting }}'
+        self.days_log.save()
+        result = self.render_template_tag(self.days_log, 'happenings', context={'greeting': 'hello'})
+        self.assertIn('hello', result)

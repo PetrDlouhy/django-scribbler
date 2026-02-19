@@ -7,6 +7,8 @@ from unittest import skipIf
 
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
+from django.template.context import RequestContext
+from django.test.client import RequestFactory
 from django.urls import reverse
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import override_settings
@@ -21,6 +23,46 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from . import DaysLog
 from .base import ScribblerDataTestCase, Scribble
+from scribbler.views import build_scribble_context
+
+
+class BuildScribbleContextTestCase(ScribblerDataTestCase):
+    "Unit tests for build_scribble_context."
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.scribble = self.create_scribble()
+
+    def test_default_context_contains_scribble(self):
+        "With no context given, result contains the scribble."
+        result = build_scribble_context(self.scribble)
+        self.assertEqual(result['scribble'], self.scribble)
+
+    def test_dict_context_values_preserved(self):
+        "Plain dict context values are available in the result."
+        result = build_scribble_context(self.scribble, {'foo': 'bar'})
+        self.assertEqual(result['foo'], 'bar')
+        self.assertEqual(result['scribble'], self.scribble)
+
+    def test_dict_context_not_mutated(self):
+        "The original dict context is not modified."
+        ctx = {'foo': 'bar'}
+        build_scribble_context(self.scribble, ctx)
+        self.assertNotIn('scribble', ctx)
+
+    def test_request_context_flattened(self):
+        "RequestContext is flattened so its variables are available in the result."
+        request = self.factory.get('/')
+        ctx = RequestContext(request, {'foo': 'bar'})
+        result = build_scribble_context(self.scribble, ctx)
+        self.assertEqual(result['foo'], 'bar')
+        self.assertEqual(result['scribble'], self.scribble)
+
+    def test_scribble_overrides_context(self):
+        "The scribble key always reflects the passed scribble, even if context has one."
+        other_scribble = self.create_scribble()
+        result = build_scribble_context(self.scribble, {'scribble': other_scribble})
+        self.assertEqual(result['scribble'], self.scribble)
 
 
 @override_settings(ROOT_URLCONF='scribbler.tests.urls')
