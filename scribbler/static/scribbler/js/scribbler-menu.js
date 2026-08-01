@@ -1,62 +1,70 @@
-/*global require, module */
+/*global require, module, window, document */
 
-var $ = require('jquery');
-var Backbone = require('backbone');
-var _ = require('underscore');
-Backbone.$ = $;
+var dom = require('./scribbler-dom.js');
 
-
-var gettext = gettext || function (text) {
+function gettext(text) {
     'use strict';
+    if (typeof window.gettext === 'function') {
+        return window.gettext(text);
+    }
     return text;
-};
+}
 
-var ScribbleMenu = Backbone.View.extend({
-    id: 'scribbleMenuContainer',
-    tagName: 'div',
-    initialize: function () {
-        this.visible = false;
-        this.controls = {};
-        this.scribbles = $('.scribble-wrapper.with-controls');
-    },
-    events: {
-        'click .tab': 'toggle',
-        'click .control-panel .reveal': 'highlight'
-    },
+function ScribbleMenu() {
+    'use strict';
+    this.el = dom.element('div');
+    this.el.id = 'scribbleMenuContainer';
+    // was $.animate({top: ...}): slide the menu with a transition instead
+    this.el.style.transition = 'top 0.2s';
+    this.visible = false;
+    this.controls = {};
+    this.scribbles = document.querySelectorAll('.scribble-wrapper.with-controls');
+}
+
+ScribbleMenu.prototype = {
+    constructor: ScribbleMenu,
     render: function () {
+        'use strict';
         if (this.scribbles.length > 0) {
             this.buildControls();
-            this.$el.css('top', -1000);
-            $('body').append(this.$el);
+            this.el.style.top = '-1000px';
+            document.body.appendChild(this.el);
             this.close();
         }
     },
     buildControls: function () {
+        'use strict';
         // Build control bar
-        this.menuControls = $('<div></div>').addClass('control-panel');
+        this.menuControls = dom.element('div', 'control-panel');
         // Open/Close button
-        this.controls.tab = $('<a><span class="hot-dog"></span><span class="hot-dog"></span><span class="hot-dog"></span></a>')
-            .attr({title: gettext('Toggle Menu')})
-            .addClass('tab');
+        this.controls.tab = dom.element('a', 'tab',
+            '<span class="hot-dog"></span><span class="hot-dog"></span><span class="hot-dog"></span>');
+        this.controls.tab.title = gettext('Toggle Menu');
+        this.controls.tab.addEventListener('click', this.toggle.bind(this));
         // Reveal button
-        this.controls.reveal = $('<a>' + gettext('Show all scribbles') + '</a>')
-            .attr({title: gettext('Show all scribbles')})
-            .addClass('reveal');
-        this.menuControls.append(this.controls.reveal);
-        this.$el.append(this.menuControls);
-        this.$el.append(this.controls.tab);
+        this.controls.reveal = dom.element('a', 'reveal', gettext('Show all scribbles'));
+        this.controls.reveal.title = gettext('Show all scribbles');
+        this.controls.reveal.addEventListener('click', this.highlight.bind(this));
+        this.menuControls.appendChild(this.controls.reveal);
+        this.el.appendChild(this.menuControls);
+        this.el.appendChild(this.controls.tab);
     },
-    open: function (scribble) {
-        this.$el.animate({top: 0}, 150);
+    open: function () {
+        'use strict';
+        this.el.style.top = '0px';
         this.visible = true;
     },
     close: function () {
-        var height = this.menuControls.height();
-        this.$el.animate({top: -1 * (5 + height)}, 200);
+        'use strict';
+        var height = this.menuControls.offsetHeight;
+        this.el.style.top = (-1 * (5 + height)) + 'px';
         this.visible = false;
-        this.scribbles.removeClass('highlight');
+        dom.forEach(this.scribbles, function (elem) {
+            elem.classList.remove('highlight');
+        });
     },
     toggle: function () {
+        'use strict';
         if (this.visible) {
             this.close();
         } else {
@@ -64,12 +72,17 @@ var ScribbleMenu = Backbone.View.extend({
         }
     },
     highlight: function () {
-        this.scribbles.addClass('highlight');
+        'use strict';
+        dom.forEach(this.scribbles, function (elem) {
+            elem.classList.add('highlight');
+        });
     },
     destroy: function () {
-        this.undelegateEvents();
-        this.remove();
+        'use strict';
+        if (this.el.parentNode) {
+            this.el.parentNode.removeChild(this.el);
+        }
     }
-});
+};
 
 module.exports = ScribbleMenu;
