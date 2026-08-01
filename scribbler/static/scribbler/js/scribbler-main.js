@@ -9,15 +9,20 @@
 */
 
 /*global require */
-var $ = require('jquery');
-var _ = require('underscore');
 var ScribbleMenu = require('./scribbler-menu.js');
 var ScribbleEditor = require('./scribbler-editor.js');
 
-$(document).ready(function () {
+function init() {
+    'use strict';
     var editor = new ScribbleEditor(),
         menu = new ScribbleMenu();
-    editor.bind("open", menu.close, menu);
+    editor.on("open", menu.close, menu);
     editor.render();
     menu.render();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}

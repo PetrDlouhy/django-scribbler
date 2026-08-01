@@ -1,5 +1,5 @@
 STATIC_DIR = ./scribbler/static/scribbler
-PROJECT_FILES = ${STATIC_DIR}/js/scribbler-main.js ${STATIC_DIR}/js/scribbler-editor.js ${STATIC_DIR}/js/scribbler-menu.js ${STATIC_DIR}/js/djangohint.js
+PROJECT_FILES = ${STATIC_DIR}/js/scribbler-main.js ${STATIC_DIR}/js/scribbler-editor.js ${STATIC_DIR}/js/scribbler-menu.js ${STATIC_DIR}/js/scribbler-dom.js ${STATIC_DIR}/js/djangohint.js
 TESTS_DIR = ./scribbler/tests/qunit
 TEST_FILES = ${TESTS_DIR}/menu-test.js ${TESTS_DIR}/editor-test.js
 
@@ -26,7 +26,7 @@ lint-js: fetch-static-libs
 	node_modules/.bin/jshint ${STATIC_DIR}/js/scribbler-main.js
 	node_modules/.bin/jshint ${STATIC_DIR}/js/scribbler-editor.js
 	node_modules/.bin/jshint ${STATIC_DIR}/js/scribbler-menu.js
-	node_modules/.bin/jshint ${STATIC_DIR}/js/plugins/
+	node_modules/.bin/jshint ${STATIC_DIR}/js/scribbler-dom.js
 
 ${STATIC_DIR}/js/scribbler.js: ${PROJECT_FILES}
 	node_modules/.bin/browserify $< -o $@
