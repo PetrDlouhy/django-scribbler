@@ -18,10 +18,13 @@ def build_scribble_context(scribble, context=None):
     "Create context for rendering a scribble or scribble preview."
     if context is None:
         context = {}
-    elif context.__class__.__name__ == 'RequestContext':
+    elif hasattr(context, 'flatten'):
+        # Any django template Context (RequestContext or a subclass, or a
+        # plain Context when the template renders without a request) must
+        # become a plain dict: the template engine accepts nothing else.
         context = context.flatten()
     else:
-        context = context.copy()
+        context = dict(context)
 
     context.update({
         'scribble': scribble,

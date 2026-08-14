@@ -7,7 +7,7 @@ from unittest import skipIf
 
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
-from django.template.context import RequestContext
+from django.template.context import Context, RequestContext
 from django.test.client import RequestFactory
 from django.urls import reverse
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -57,6 +57,24 @@ class BuildScribbleContextTestCase(ScribblerDataTestCase):
         result = build_scribble_context(self.scribble, ctx)
         self.assertEqual(result['foo'], 'bar')
         self.assertEqual(result['scribble'], self.scribble)
+
+    def test_plain_context_flattened(self):
+        "A plain Context (template rendered without a request) becomes a dict."
+        ctx = Context({'foo': 'bar'})
+        result = build_scribble_context(self.scribble, ctx)
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result['foo'], 'bar')
+        self.assertEqual(result['scribble'], self.scribble)
+
+    def test_request_context_subclass_flattened(self):
+        "Subclasses of RequestContext are flattened like the base class."
+        class CustomRequestContext(RequestContext):
+            pass
+        request = self.factory.get('/')
+        ctx = CustomRequestContext(request, {'foo': 'bar'})
+        result = build_scribble_context(self.scribble, ctx)
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result['foo'], 'bar')
 
     def test_scribble_overrides_context(self):
         "The scribble key always reflects the passed scribble, even if context has one."
