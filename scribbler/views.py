@@ -14,12 +14,21 @@ from .models import Scribble
 from .utils import get_variables
 
 
-def build_scribble_context(scribble):
+def build_scribble_context(scribble, context=None):
     "Create context for rendering a scribble or scribble preview."
-    context = {
-        'scribble': scribble,
-    }
+    if context is None:
+        context = {}
+    elif hasattr(context, 'flatten'):
+        # Any django template Context (RequestContext or a subclass, or a
+        # plain Context when the template renders without a request) must
+        # become a plain dict: the template engine accepts nothing else.
+        context = context.flatten()
+    else:
+        context = dict(context)
 
+    context.update({
+        'scribble': scribble,
+    })
     return context
 
 
