@@ -20,7 +20,7 @@ class UnicodeURLTestCase(ScribblerDataTestCase):
             url='/foo/čřžžýü', slug='sidebar',
             content='<p>Scribble content.</p>'
         )
-        self.assertEquals(scribble.url, "/foo/čřžžýü")
+        self.assertEqual(scribble.url, "/foo/čřžžýü")
 
 
 class RenderScribbleTestCase(ScribblerDataTestCase):
