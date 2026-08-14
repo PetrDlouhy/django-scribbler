@@ -9,7 +9,8 @@
     "example": "example"
   },
   "scripts": {
-    "test": "python runtests.py"
+    "test": "python runtests.py",
+    "test-js": "node scribbler/tests/js/editor_smoke.cjs"
   },
   "repository": {
     "type": "git",
@@ -22,14 +23,13 @@
   "dependencies": {
     "codemirror": "^5.40.0",
     "jshint": "^2.9.6",
-    "less": "^2.7.3",
-    "phantomjs-prebuilt": "^2.1.16"
+    "less": "^2.7.3"
   },
   "devDependencies": {
     "browserify": "^11.2.0",
-    "browserify-compile-templates": "^0.2.0",
     "less": "^2.5.3",
-    "uglify-js": "^2.5.0"
+    "uglify-js": "^2.5.0",
+    "jsdom": "^24.0.0"
   },
   "author": "Mark Lavin",
   "contributors": [

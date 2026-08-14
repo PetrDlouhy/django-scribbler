@@ -1,7 +1,5 @@
 STATIC_DIR = ./scribbler/static/scribbler
 PROJECT_FILES = ${STATIC_DIR}/js/scribbler-main.js ${STATIC_DIR}/js/scribbler-editor.js ${STATIC_DIR}/js/scribbler-menu.js ${STATIC_DIR}/js/scribbler-dom.js ${STATIC_DIR}/js/djangohint.js
-TESTS_DIR = ./scribbler/tests/qunit
-TEST_FILES = ${TESTS_DIR}/menu-test.js ${TESTS_DIR}/editor-test.js
 
 fetch-static-libs: FORCE
 	# Fetch JS library dependencies
@@ -36,13 +34,9 @@ ${STATIC_DIR}/js/scribbler-min.js: ${STATIC_DIR}/js/scribbler.js
 
 build-js: ${STATIC_DIR}/js/scribbler-min.js
 
-${TESTS_DIR}/bundle.js: ${TESTS_DIR}/main.js ${PROJECT_FILES} ${TEST_FILES}
-	node_modules/.bin/browserify -t browserify-compile-templates --extension=.html $< -o $@
-
-test-js: ${TESTS_DIR}/bundle.js
-	# Run the QUnit tests
-	# Requires PhantomJS
-	node_modules/.bin/phantomjs ${TESTS_DIR}/runner.js ${TESTS_DIR}/index.html
+test-js: ${STATIC_DIR}/js/scribbler.js
+	# Run the editor smoke test against the built bundle in jsdom
+	node scribbler/tests/js/editor_smoke.cjs
 
 compile-messages:
 	# Create compiled .mo files for source distribution
@@ -74,7 +68,6 @@ clean:
 	rm -f ${STATIC_DIR}/js/scribbler.js
 	rm -f ${STATIC_DIR}/js/scribbler-min.js
 	rm -rf ${STATIC_DIR}/css
-	rm -f ${TESTS_DIR}/bundle.js
 	rm -rf example/example/static/
 	rm -rf dist
 	rm -rf .tox
